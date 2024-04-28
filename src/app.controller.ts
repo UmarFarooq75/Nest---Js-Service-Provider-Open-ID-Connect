@@ -1,5 +1,7 @@
 import { Controller, Get, Request } from '@nestjs/common';
 import { AppService } from './app.service';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 @Controller()
 export class AppController {
@@ -9,10 +11,9 @@ export class AppController {
     if (req.user) {
       const userinfo = req.user.userinfo;
       const greeting = `Hello, ${userinfo.name}!`;
-      const email = `Email: ${userinfo.email}`;
       const picture = `<img src="${userinfo.picture}" alt="User Picture" />`;
       const logoutLink = `<a href="/logout">Logout</a>`;
-      return `${greeting}<br>${email}<br>${picture}<br>${logoutLink}`;
+      return `${greeting}${picture}<br>${logoutLink}`;
     } else {
       return `${this.appService.getHello()} <a href="/login">Login</a>`;
     }

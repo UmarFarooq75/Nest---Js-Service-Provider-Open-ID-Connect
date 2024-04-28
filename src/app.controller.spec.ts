@@ -14,9 +14,46 @@ describe('AppController', () => {
     appController = app.get<AppController>(AppController);
   });
 
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+  it('should be defined', () => {
+    expect(appController).toBeDefined();
+  });
+
+  describe('getHello', () => {
+    it('should return a greeting message with user information', () => {
+      // Mock the request object with user information
+      const mockRequest: any = {
+        user: {
+          userinfo: {
+            name: 'John Doe',
+            email: 'john@example.com',
+            picture: 'http://example.com/picture.jpg',
+          },
+        },
+      };
+
+      // Call the getHello method with the mock request object
+      const result = appController.getHello(mockRequest);
+
+      // Assert that the result contains the expected greeting message
+      expect(result).toContain('Hello, John Doe!');
+      expect(result).toContain('Email: john@example.com');
+      expect(result).toContain(
+        '<img src="http://example.com/picture.jpg" alt="User Picture" />',
+      );
+      expect(result).toContain('<a href="/logout">Logout</a>');
+    });
+
+    it('should return a greeting message with login link when no user information is provided', () => {
+      // Mock the request object without user information
+      const mockRequest: any = {};
+
+      // Call the getHello method with the mock request object
+      const result = appController.getHello(mockRequest);
+
+      // Assert that the result contains the expected greeting message with login link
+      expect(result).toContain('Welcome! <a href="/login">Login</a>');
     });
   });
+
+  // Add more test cases as needed
 });

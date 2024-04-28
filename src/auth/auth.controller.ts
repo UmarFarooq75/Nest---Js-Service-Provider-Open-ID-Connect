@@ -1,12 +1,15 @@
-// auth/auth.controller.ts
 import { Controller, Get, Request, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
-
 import { LoginGuard } from './login.guard';
 import { Issuer } from 'openid-client';
+import { AuthService } from './auth.service'; // Import AuthService
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 @Controller()
 export class AuthController {
+  constructor(private readonly authService: AuthService) {}
+
   @UseGuards(LoginGuard)
   @Get('/login')
   login() {}
@@ -18,14 +21,18 @@ export class AuthController {
 
   @UseGuards(LoginGuard)
   @Get('/callback')
-  loginCallback(@Res() res: Response) {
+  async loginCallback(@Res() res: Response, @Request() req) {
+    // Add @Request() decorator
+    // Validate user and get user data using AuthService
+    const userData = await this.authService.validateUser(req.user);
+    // Set user data in cookies
+    res.cookie('userData', userData, { maxAge: 900000, httpOnly: true });
     res.redirect('/');
   }
 
   @Get('/logout')
   async logout(@Request() req, @Res() res: Response) {
     const id_token = req.user ? req.user.id_token : undefined;
-
     // Instead of using req.logout(), you can manually clear the session
     // and perform any cleanup actions needed
     const TrustIssuer = await Issuer.discover(
