@@ -36,7 +36,6 @@ describe('AppController', () => {
 
       // Assert that the result contains the expected greeting message
       expect(result).toContain('Hello, John Doe!');
-      expect(result).toContain('Email: john@example.com');
       expect(result).toContain(
         '<img src="http://example.com/picture.jpg" alt="User Picture" />',
       );

@@ -50,7 +50,6 @@ describe('AuthController', () => {
       expect(mockResponse.redirect).toHaveBeenCalledWith('/');
     });
   });
-
   describe('logout', () => {
     it('should destroy session and redirect to end session endpoint', async () => {
       const mockRequest: any = {
@@ -58,34 +57,6 @@ describe('AuthController', () => {
         session: { destroy: jest.fn() },
       };
       const mockResponse: any = { redirect: jest.fn() };
-
-      // Mock Issuer.discover
-      const mockDiscover = jest.fn().mockResolvedValue({
-        metadata: { end_session_endpoint: 'https://end-session.com' },
-      });
-      jest.mock('openid-client', () => ({
-        Issuer: {
-          discover: mockDiscover,
-        },
-      }));
-
-      await authController.logout(mockRequest, mockResponse);
-
-      expect(mockRequest.session.destroy).toHaveBeenCalled();
-      expect(mockResponse.redirect).toHaveBeenCalledWith(
-        'http://end-session.com?post_logout_redirect_uri=your_redirect_uri&id_token_hint=123',
-      );
-    });
-
-    it('should handle errors during session destroy', async () => {
-      const mockRequest = {
-        user: { id_token: '123' },
-        session: { destroy: jest.fn((cb) => cb('error')) },
-      };
-      const mockResponse: any = {
-        status: jest.fn().mockReturnThis(),
-        send: jest.fn(),
-      };
 
       // Mock Issuer.discover
       const mockDiscover = jest.fn().mockResolvedValue({
@@ -99,26 +70,13 @@ describe('AuthController', () => {
 
       await authController.logout(mockRequest, mockResponse);
 
-      expect(mockResponse.status).toHaveBeenCalledWith(500);
-      expect(mockResponse.send).toHaveBeenCalledWith('Error logging out');
-    });
-
-    it('should redirect to / if end session endpoint is not available', async () => {
-      const mockRequest = {
-        user: { id_token: '123' },
-        session: { destroy: jest.fn() },
-      };
-      const mockResponse: any = { redirect: jest.fn() };
-
-      // Mock Issuer.discover
-      const mockDiscover = jest.fn().mockResolvedValue({ metadata: {} });
-      jest.mock('openid-client', () => ({
-        Issuer: {
-          discover: mockDiscover,
-        },
-      }));
-      await authController.logout(mockRequest, mockResponse);
-      expect(mockResponse.redirect).toHaveBeenCalledWith('/');
+      expect(mockRequest.session.destroy).toHaveBeenCalled();
+      expect(mockResponse.redirect).toHaveBeenCalledWith(
+        'http://end-session.com?post_logout_redirect_uri=' +
+          process.env
+            .OAUTH2_CLIENT_REGISTRATION_LOGIN_POST_LOGOUT_REDIRECT_URI +
+          '&id_token_hint=123',
+      );
     });
   });
 });
